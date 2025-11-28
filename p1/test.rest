@@ -1,0 +1,20 @@
+### TEST GET / WEBSITE
+GET http://localhost:8468
+
+### TEST GET /dashboard WEBSITE
+GET http://localhost:8468/dashboard
+
+### DATA ENDPOINT 
+GET http://localhost:8468/api/dat
+
+### DATA ENDPOINT FOR ADDING A USER
+POST http://localhost:8468/api/data
+Content-Type: application/json
+
+{
+    "name": "Adhikari"
+}
+
+### DELETE END POINT
+
+DELETE http://localhost:8468/api/data
