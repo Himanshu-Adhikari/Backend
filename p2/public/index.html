@@ -142,7 +142,7 @@
                 <p>${todo.task}</p>
                 <div class="todo-buttons">
                     <button onclick="updateTodo(${taskIndex})" ${todo.completed ? 'disabled' : ''}>
-                        <h6>Done</h6>
+                        <h6>${todo.completed ? "Completed" : "Done"}</h6>
                     </button>
                     <button onclick="deleteTodo(${taskIndex})">
                         <h6>Delete</h6>

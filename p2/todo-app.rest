@@ -7,7 +7,7 @@ POST http://localhost:5000/auth/register
 Content-Type: application/json
 
 {
-    "username":"Himanshu",
+    "username":"Adhikari",
     "password":"1231232"
 }
 
@@ -22,3 +22,27 @@ Content-Type: application/json
     "password":"123232"
 }
 
+###Fetch all todos
+GET http://localhost:5000/todos
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzY0NTEwNDE2LCJleHAiOjE3NjQ1OTY4MTZ9.0VDRIKk2GvKGUgyMCHYosowjzrCaHeXSnh7KFdN8Yrg
+###
+POST http://localhost:5000/todos
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzY0NTEwNDE2LCJleHAiOjE3NjQ1OTY4MTZ9.0VDRIKk2GvKGUgyMCHYosowjzrCaHeXSnh7KFdN8Yrg
+Content-Type: application/json
+
+{
+    "task":"Finish backend course. "
+}
+
+###Update todos
+PUT http://localhost:5000/todos/2
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzY0NTEwNDE2LCJleHAiOjE3NjQ1OTY4MTZ9.0VDRIKk2GvKGUgyMCHYosowjzrCaHeXSnh7KFdN8Yrg
+Content-Type: application/json
+
+{
+    "completed":1
+}
+
+###Delete todos
+DELETE  HTTP/1.1 http://localhost:5000/todos/2
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzY0NTEwNDE2LCJleHAiOjE3NjQ1OTY4MTZ9.0VDRIKk2GvKGUgyMCHYosowjzrCaHeXSnh7KFdN8Yrg
