@@ -1,0 +1,24 @@
+### GET Route main
+GET http://localhost:5000
+
+
+###Register a user
+POST http://localhost:5000/auth/register
+Content-Type: application/json
+
+{
+    "username":"Himanshu",
+    "password":"1231232"
+}
+
+
+###Login
+
+POST http://localhost:5000/auth/login
+Content-Type: application/json
+
+{
+    "username":"Himanshu",
+    "password":"1231232"
+}
+
