@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App | Node.JS Express.JS SQLite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Auth Section */
+        #auth {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-width: 450px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+            min-height: 100vh;
+            justify-content: center;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        #auth > div {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        #auth h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--gradient-3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        #auth > div p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        #error {
+            padding: 1rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            color: #fca5a5;
+            font-size: 0.875rem;
+            animation: shake 0.3s ease-in-out;
+        }
+
+        input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            background: var(--bg-tertiary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        input::placeholder {
+            color: var(--text-muted);
+        }
+
+        button {
+            padding: 1rem 1.5rem;
+            background: var(--primary);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        button:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #authBtn {
+            width: 100%;
+            background: var(--gradient-1);
+        }
+
+        hr {
+            border: none;
+            height: 1px;
+            background: var(--border);
+            margin: 0.5rem 0;
+        }
+
+        .register-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .register-content p {
+            color: var(--text-secondary);
+        }
+
+        #registerBtn {
+            padding: 0.5rem 1.5rem;
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        #registerBtn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Dashboard */
+        header {
+            position: relative;
+            z-index: 1;
+            padding: 2rem;
+            text-align: center;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            background: var(--gradient-3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0 auto;
+        }
+
+        /* Tabs */
+        nav {
+            position: relative;
+            z-index: 1;
+            padding: 0 2rem;
+            animation: fadeIn 0.6s ease-out 0.1s backwards;
+        }
+
+        .tab-container {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--bg-secondary);
+            padding: 0.5rem;
+            border-radius: 16px;
+            overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) var(--bg-tertiary);
+        }
+
+        .tab-container::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .tab-container::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+        }
+
+        .tab-container::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        .tab-button {
+            flex: 1;
+            min-width: fit-content;
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            border-radius: 12px;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab-button h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .tab-button span {
+            opacity: 0.6;
+            font-size: 0.875rem;
+        }
+
+        .tab-button:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .selected-tab {
+            background: var(--primary) !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .selected-tab span {
+            opacity: 0.9;
+        }
+
+        /* Main Content */
+        main {
+            position: relative;
+            z-index: 1;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            animation: fadeIn 0.6s ease-out 0.2s backwards;
+        }
+
+        .todo-item {
+            padding: 1.25rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            transition: all 0.3s ease;
+            animation: slideUp 0.4s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .todo-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--gradient-1);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .todo-item:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--shadow);
+        }
+
+        .todo-item:hover::before {
+            transform: scaleY(1);
+        }
+
+        .todo-item p {
+            color: var(--text-primary);
+            font-size: 1rem;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        .todo-buttons {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .todo-buttons button {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            border-radius: 10px;
+        }
+
+        .todo-buttons button:first-of-type {
+            background: var(--success);
+        }
+
+        .todo-buttons button:first-of-type:hover {
+            background: #059669;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .todo-buttons button:first-of-type:disabled {
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .todo-buttons button:last-of-type {
+            background: var(--danger);
+        }
+
+        .todo-buttons button:last-of-type:hover {
+            background: #dc2626;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Input Container */
+        .input-container {
+            display: flex;
+            gap: 0.75rem;
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        .input-container:focus-within {
+            border-color: var(--primary);
+            border-style: solid;
+            background: var(--bg-tertiary);
+        }
+
+        .input-container input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 0.5rem;
+        }
+
+        .input-container input:focus {
+            box-shadow: none;
+            background: transparent;
+        }
+
+        .input-container button {
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gradient-1);
+            flex-shrink: 0;
+        }
+
+        .input-container button i {
+            font-size: 1.25rem;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* Responsive */
+        @media (min-width: 640px) {
+            #auth {
+                padding: 3rem;
+            }
+
+            header h1 {
+                font-size: 2.5rem;
+            }
+
+            .todo-item {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .todo-buttons {
+                flex-shrink: 0;
+                width: auto;
+            }
+
+            .todo-buttons button {
+                flex: initial;
+                min-width: 100px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            main {
+                max-width: 800px;
+                margin: 0 auto;
+                width: 100%;
+            }
+
+            nav {
+                max-width: 800px;
+                margin: 0 auto;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <section id="auth">
+        <div>
+            <h2>Login</h2>
+            <p>Create an account!</p>
+        </div>
+
+        <p id="error" style="display: none;"></p>
+        <input id="emailInput" placeholder="Email" />
+        <input id="passwordInput" placeholder="********" type="password" />
+        <button id="authBtn" onclick="authenticate()">
+            Submit
+        </button>
+        
+        <hr />
+        <div class="register-content">
+            <p>Don't have an account?</p>
+            <button onclick="toggleIsRegister()" id="registerBtn">Sign up</button>
+        </div>
+    </section>
+    <header style="display: none;">
+        <button onclick="logout()" style="position:absolute; top:20px; right:20px; background:#ef4444">Logout</button>
+        <h1>You have 0 open tasks.</h1>
+    </header>
+    <nav style="display: none;" class="tab-container">
+        <button onclick="changeTab('All')" class="tab-button selected-tab">
+            <h4>All <span>(0)</span></h4>
+        </button>
+        <button onclick="changeTab('Open')" class="tab-button">
+            <h4>Open <span>(0)</span></h4>
+        </button>
+        <button onclick="changeTab('Complete')" class="tab-button">
+            <h4>Complete <span>(0)</span></h4>
+        </button>
+    </nav>
+    <main style="display: none;">
+
+
+    </main>
+</body>
+<script>
+    let token = localStorage.getItem('token')
+
+    let isLoading = false
+    let isAuthenticating = false
+    let isRegistration = false
+    let selectedTab = 'All'
+    let todos = []
+
+    const apiBase = '/'
+
+    // elements
+    const nav = document.querySelector('nav')
+    const header = document.querySelector('header')
+    const main = document.querySelector('main')
+    const navElements = document.querySelectorAll('.tab-button')
+    const authContent = document.getElementById('auth')
+    const textError = document.getElementById('error')
+    const email = document.getElementById('emailInput')
+    const password = document.getElementById('passwordInput')
+    const registerBtn = document.getElementById('registerBtn')
+    const authBtn = document.getElementById('authBtn')
+    const addTodoBtn = document.getElementById('addTodoBtn')
+
+    // PAGE RENDERING LOGIC
+    async function showDashboard() {
+        nav.style.display = 'block'
+        header.style.display = 'flex'
+        main.style.display = 'flex'
+        authContent.style.display = 'none'
+
+        await fetchTodos()
+    }
+
+function updateHeaderText() {
+    const openTodos = todos.filter(val => !val.completed && val.completed !== 1).length
+    const newString = openTodos === 1 ?
+        `You have 1 open task.` :
+        `You have ${openTodos} open tasks.`
+    header.querySelector('h1').innerText = newString
+}
+
+  function updateNavCount() {
+    navElements.forEach(ele => {
+        const h4Text = ele.querySelector('h4')
+        if (!h4Text) return
+        
+        const btnText = h4Text.textContent.trim().split(' ')[0]
+
+        let count = 0
+        if (btnText === 'All') {
+            count = todos.length
+        } else if (btnText === 'Complete') {
+            count = todos.filter(val => val.completed === 1 || val.completed === true).length
+        } else if (btnText === 'Open') {
+            count = todos.filter(val => !val.completed || val.completed === 0).length
+        }
+
+        ele.querySelector('span').innerText = `(${count})`
+    })
+}
+    function changeTab(tab) {
+        selectedTab = tab
+        navElements.forEach(val => {
+            if (val.innerText.includes(tab)) {
+                val.classList.add('selected-tab')
+            } else {
+                val.classList.remove('selected-tab')
+            }
+        })
+        renderTodos()
+    }
+
+    function renderTodos() {
+        updateNavCount()
+        updateHeaderText()
+
+        let todoList = ``
+        todos.filter(val => {
+            return selectedTab === 'All' ? true : selectedTab === 'Complete' ? val.completed : !val.completed
+        }).forEach((todo, todoIndex) => {
+            const taskIndex = todo.id
+            todoList += `
+            <div class="todo-item">
+                <p>${todo.task}</p>
+                <div class="todo-buttons">
+                    <button onclick="updateTodo(${taskIndex})" ${todo.completed ? 'disabled' : ''}>
+                        <h6>${todo.completed ? "Completed" : "Done"}</h6>
+                    </button>
+                    <button onclick="deleteTodo(${taskIndex})">
+                        <h6>Delete</h6>
+                    </button>
+                </div>
+            </div>
+            `
+        })
+        todoList += `
+        <div class="input-container">
+            <input id="todoInput" placeholder="Add a new task..." />
+            <button onclick="addTodo()">
+                <i class="fa-solid fa-plus"></i>
+            </button>
+        </div>
+        `
+        main.innerHTML = todoList
+    }
+
+    // AUTH LOGIC
+    async function toggleIsRegister() {
+        isRegistration = !isRegistration
+        registerBtn.innerText = isRegistration ? 'Sign in' : 'Sign up'
+        document.querySelector('#auth > div h2').innerText = isRegistration ? 'Sign Up' : 'Login'
+        document.querySelector('.register-content p').innerText = isRegistration ? 'Already have an account?' : 'Don\'t have an account?'
+        document.querySelector('.register-content button').innerText = isRegistration ? 'Sign in' : 'Sign up'
+    }
+
+    async function authenticate() {
+        const emailVal = email.value
+        const passVal = password.value
+
+        if (
+            isLoading ||
+            isAuthenticating ||
+            !emailVal ||
+            !passVal ||
+            passVal.length < 6 ||
+            !emailVal.includes('@')
+        ) { return }
+
+        textError.style.display = 'none'
+        isAuthenticating = true
+        authBtn.innerText = 'Authenticating...'
+
+        try {
+            let data
+            if (isRegistration) {
+                const response = await fetch(apiBase + 'auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: emailVal, password: passVal })
+                })
+                data = await response.json()
+            } else {
+                const response = await fetch(apiBase + 'auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: emailVal, password: passVal })
+                })
+                data = await response.json()
+            }
+
+            if (data.token) {
+                token = data.token
+                localStorage.setItem('token', token)
+
+                authBtn.innerText = 'Loading...'
+
+                await fetchTodos()
+
+                showDashboard()
+            } else {
+                throw Error('❌ Failed to authenticate...')
+            }
+
+        } catch (err) {
+            console.log(err.message)
+            textError.innerText = err.message
+            textError.style.display = 'block'
+        } finally {
+            authBtn.innerText = 'Submit'
+            isAuthenticating = false
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('token')
+        token = null
+        todos = []
+
+        authContent.style.display = 'flex'
+        nav.style.display = 'none'
+        header.style.display = 'none'
+        main.style.display = 'none'
+         location.reload()
+
+    }
+
+
+    // CRUD LOGIC
+    async function fetchTodos() {
+        isLoading = true
+        const response = await fetch(apiBase + 'todos', {
+            headers: { 'Authorization': token }
+        })
+        const todosData = await response.json()
+        todos = todosData
+        isLoading = false
+        renderTodos()
+    }
+
+    async function updateTodo(index) {
+        await fetch(apiBase + 'todos' + '/' + index, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify({ task: todos.find(val => val.id === index).task, completed: 1 })
+        })
+
+        fetchTodos()
+    }
+
+    async function deleteTodo(index) {
+        await fetch(apiBase + 'todos' + '/' + index, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': token
+            },
+        })
+        fetchTodos()
+    }
+
+    async function addTodo() {
+        const todoInput = document.getElementById('todoInput')
+        const task = todoInput.value
+
+        if (!task) { return }
+
+        await fetch(apiBase + 'todos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify({ task })
+        })
+        todoInput.value = ''
+        fetchTodos()
+    }
+
+    // UTILITY FUNCTIONS
+    if (token) {
+        async function run() {
+            await fetchTodos()
+            showDashboard()
+        }
+        run()
+    }
+</script>
+
+</html>
